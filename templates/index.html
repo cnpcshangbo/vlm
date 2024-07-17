@@ -24,14 +24,30 @@
         .error {
             color: red;
         }
+        .image-selection {
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
     <h1>VLM Question Answering</h1>
     <form id="qa-form">
-        <label for="image-url">Image URL:</label>
-        <input type="text" id="image-url" name="image-url" required><br><br>
-        <img id="image-preview" src="" alt="Image preview" style="display:none;"><br>
+        <div class="image-selection">
+            <label>
+                <input type="radio" name="image-source" value="predefined" checked> 
+                Use predefined image (cats on a couch)
+            </label>
+            <br>
+            <label>
+                <input type="radio" name="image-source" value="custom"> 
+                Use custom image URL
+            </label>
+        </div>
+        <div id="custom-url-input" style="display: none;">
+            <label for="image-url">Custom Image URL:</label>
+            <input type="text" id="image-url" name="image-url"><br><br>
+        </div>
+        <img id="image-preview" src="http://images.cocodataset.org/val2017/000000039769.jpg" alt="Image preview"><br>
         <label for="question">Question:</label>
         <input type="text" id="question" name="question" required><br><br>
         <button type="submit">Ask</button>
@@ -39,29 +55,45 @@
     <div id="result"></div>
 
     <script>
+        const imageSourceRadios = document.getElementsByName('image-source');
+        const customUrlInput = document.getElementById('custom-url-input');
         const imageUrlInput = document.getElementById('image-url');
         const imagePreview = document.getElementById('image-preview');
         const qaForm = document.getElementById('qa-form');
         const resultDiv = document.getElementById('result');
+        const predefinedImageUrl = 'http://images.cocodataset.org/val2017/000000039769.jpg';
+
+        function updateImageSource() {
+            const selectedSource = document.querySelector('input[name="image-source"]:checked').value;
+            if (selectedSource === 'predefined') {
+                customUrlInput.style.display = 'none';
+                imagePreview.src = predefinedImageUrl;
+            } else {
+                customUrlInput.style.display = 'block';
+                if (imageUrlInput.value) {
+                    imagePreview.src = imageUrlInput.value;
+                }
+            }
+        }
+
+        imageSourceRadios.forEach(radio => {
+            radio.addEventListener('change', updateImageSource);
+        });
 
         imageUrlInput.addEventListener('input', function() {
-            const imageUrl = this.value;
-            if (imageUrl) {
-                imagePreview.src = imageUrl;
-                imagePreview.style.display = 'block';
-            } else {
-                imagePreview.style.display = 'none';
+            if (this.value) {
+                imagePreview.src = this.value;
             }
         });
 
         imagePreview.addEventListener('error', function() {
-            this.style.display = 'none';
             resultDiv.innerHTML = '<p class="error">Error loading image. Please check the URL.</p>';
         });
 
         qaForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const imageUrl = imageUrlInput.value;
+            const selectedSource = document.querySelector('input[name="image-source"]:checked').value;
+            const imageUrl = selectedSource === 'predefined' ? predefinedImageUrl : imageUrlInput.value;
             const question = document.getElementById('question').value;
             resultDiv.innerHTML = 'Processing...';
             try {
@@ -72,6 +104,9 @@
                 resultDiv.innerHTML = '<p class="error">An error occurred while processing your request.</p>';
             }
         });
+
+        // Initialize the form
+        updateImageSource();
     </script>
 </body>
 </html>
