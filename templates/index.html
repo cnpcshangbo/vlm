@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VLM Question Answering</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 10px;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>VLM Question Answering</h1>
+    <form id="qa-form">
+        <label for="image-url">Image URL:</label>
+        <input type="text" id="image-url" name="image-url" required><br><br>
+        <img id="image-preview" src="" alt="Image preview" style="display:none;"><br>
+        <label for="question">Question:</label>
+        <input type="text" id="question" name="question" required><br><br>
+        <button type="submit">Ask</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        const imageUrlInput = document.getElementById('image-url');
+        const imagePreview = document.getElementById('image-preview');
+        const qaForm = document.getElementById('qa-form');
+        const resultDiv = document.getElementById('result');
+
+        imageUrlInput.addEventListener('input', function() {
+            const imageUrl = this.value;
+            if (imageUrl) {
+                imagePreview.src = imageUrl;
+                imagePreview.style.display = 'block';
+            } else {
+                imagePreview.style.display = 'none';
+            }
+        });
+
+        imagePreview.addEventListener('error', function() {
+            this.style.display = 'none';
+            resultDiv.innerHTML = '<p class="error">Error loading image. Please check the URL.</p>';
+        });
+
+        qaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const imageUrl = imageUrlInput.value;
+            const question = document.getElementById('question').value;
+            resultDiv.innerHTML = 'Processing...';
+            try {
+                const response = await axios.post('/predict', { image_url: imageUrl, question: question });
+                resultDiv.innerHTML = `<p>Answer: ${response.data.answer}</p>`;
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = '<p class="error">An error occurred while processing your request.</p>';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+name: vlm_env
+channels:
+  - pytorch
+  - nvidia
+  - huggingface
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - pytorch
+  - torchvision
+  - cudatoolkit
+  - transformers
+  - pillow
+  - flask
+  - gunicorn
+  - requests
+  - pip
+  - pip:
+    - flask-cors
