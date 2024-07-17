@@ -27,6 +27,32 @@
         .image-selection {
             margin-bottom: 15px;
         }
+        .predefined-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .predefined-images img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .predefined-images img.selected {
+            border-color: #007bff;
+        }
+        #question {
+            width: 100%;
+            height: 100px;
+            resize: vertical;
+            margin-top: 10px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -35,7 +61,7 @@
         <div class="image-selection">
             <label>
                 <input type="radio" name="image-source" value="predefined" checked> 
-                Use predefined image (cats on a couch)
+                Use predefined image
             </label>
             <br>
             <label>
@@ -43,13 +69,20 @@
                 Use custom image URL
             </label>
         </div>
+        <div id="predefined-images" class="predefined-images">
+            <img src="http://images.cocodataset.org/val2017/000000039769.jpg" alt="Cats on a couch" title="Cats on a couch">
+            <img src="http://images.cocodataset.org/val2017/000000000285.jpg" alt="Man on a bench" title="Man on a bench">
+            <img src="http://images.cocodataset.org/val2017/000000000724.jpg" alt="Girl with umbrella" title="Girl with umbrella">
+            <img src="http://images.cocodataset.org/val2017/000000001000.jpg" alt="Street scene" title="Street scene">
+            <img src="http://images.cocodataset.org/val2017/000000001584.jpg" alt="Giraffe" title="Giraffe">
+        </div>
         <div id="custom-url-input" style="display: none;">
             <label for="image-url">Custom Image URL:</label>
-            <input type="text" id="image-url" name="image-url"><br><br>
+            <input type="text" id="image-url" name="image-url">
         </div>
         <img id="image-preview" src="http://images.cocodataset.org/val2017/000000039769.jpg" alt="Image preview"><br>
         <label for="question">Question:</label>
-        <input type="text" id="question" name="question" required><br><br>
+        <textarea id="question" name="question" required placeholder="Enter your question about the image here..."></textarea>
         <button type="submit">Ask</button>
     </form>
     <div id="result"></div>
@@ -61,15 +94,18 @@
         const imagePreview = document.getElementById('image-preview');
         const qaForm = document.getElementById('qa-form');
         const resultDiv = document.getElementById('result');
-        const predefinedImageUrl = 'http://images.cocodataset.org/val2017/000000039769.jpg';
+        const predefinedImagesDiv = document.getElementById('predefined-images');
+        let selectedPredefinedImage = 'http://images.cocodataset.org/val2017/000000039769.jpg';
 
         function updateImageSource() {
             const selectedSource = document.querySelector('input[name="image-source"]:checked').value;
             if (selectedSource === 'predefined') {
                 customUrlInput.style.display = 'none';
-                imagePreview.src = predefinedImageUrl;
+                predefinedImagesDiv.style.display = 'flex';
+                imagePreview.src = selectedPredefinedImage;
             } else {
                 customUrlInput.style.display = 'block';
+                predefinedImagesDiv.style.display = 'none';
                 if (imageUrlInput.value) {
                     imagePreview.src = imageUrlInput.value;
                 }
@@ -78,6 +114,17 @@
 
         imageSourceRadios.forEach(radio => {
             radio.addEventListener('change', updateImageSource);
+        });
+
+        predefinedImagesDiv.addEventListener('click', function(e) {
+            if (e.target.tagName === 'IMG') {
+                selectedPredefinedImage = e.target.src;
+                imagePreview.src = selectedPredefinedImage;
+                predefinedImagesDiv.querySelectorAll('img').forEach(img => {
+                    img.classList.remove('selected');
+                });
+                e.target.classList.add('selected');
+            }
         });
 
         imageUrlInput.addEventListener('input', function() {
@@ -93,7 +140,7 @@
         qaForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const selectedSource = document.querySelector('input[name="image-source"]:checked').value;
-            const imageUrl = selectedSource === 'predefined' ? predefinedImageUrl : imageUrlInput.value;
+            const imageUrl = selectedSource === 'predefined' ? selectedPredefinedImage : imageUrlInput.value;
             const question = document.getElementById('question').value;
             resultDiv.innerHTML = 'Processing...';
             try {
@@ -107,6 +154,7 @@
 
         // Initialize the form
         updateImageSource();
+        predefinedImagesDiv.querySelector('img').classList.add('selected');
     </script>
 </body>
 </html>
